@@ -3,9 +3,6 @@ const app = express();
 const port = 3001;
 const cors = require("cors");
 // const bodyParser = require("body-parser");
-const goodsRouter = require("./routes/goods");
-const signUpRouter = require("./routes/SignUp");
-const cartsRouter = require("./routes/cart");
 const userRouter = require("./routes/user");
 const tokenRouter = require("./routes/token");
 
@@ -38,14 +35,12 @@ app.listen(port, () => {
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = `myNameIsJiYong`;
 const token = jwt.sign({ myPayloadData: 1234 }, "mysecretkey");
-console.log(token);
 
 //! ---------------------  액세스토큰 발급 연습  -------------------------------
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 // 미들웨어역할 , 앞의 url주소가 앞에 오면 아래 미들웨어를 거쳐간다.
-app.use("/api", [goodsRouter]);
-app.use("/signup", [signUpRouter]);
+
 app.use("/user", [userRouter]);
 app.use("/token", [tokenRouter]);
