@@ -5,6 +5,7 @@ const cors = require("cors");
 // const bodyParser = require("body-parser");
 const goodsRouter = require("./routes/goods");
 const signUpRouter = require("./routes/SignUp");
+const cartsRouter = require("./routes/cart");
 
 // cors해결해주자.
 app.use(
