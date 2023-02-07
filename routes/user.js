@@ -47,14 +47,84 @@ router.post("/login", async (req, res) => {
     .send({ accessToken, refreshToken, message: "로그인 성공!" });
 });
 
+router.post("/survey", async (req, res) => {
+  const { authorization } = req.headers;
+  const [authType, authToken] = (authorization || "").split(" ");
+  const { id } = jwt.verify(authToken, SECRET_KEY);
+  const { responses } = req.body;
+  console.log(responses);
+  //일단 회원정보를 가져오고
+  const existUser = await User.findOne({ email: id });
+  //회원이 응답 내역이 있으면,
+
+  try {
+    if (existUser.responses) {
+      await User.updateOne({ email: id }, { $set: { responses: responses } });
+    } else {
+      await User.updateOne({ email: id }, { $push: { responses: responses } });
+    }
+
+    res.status(200).send("성공");
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/survey/result", async (req, res) => {
+  const { authorization } = req.headers;
+  const [authType, authToken] = (authorization || "").split(" ");
+  const { id } = jwt.verify(authToken, SECRET_KEY);
+  //일단 회원정보를 가져오고
+  const existUser = await User.findOne({ email: id });
+
+  try {
+    if (existUser.secondResponses) {
+      res.status(200).send({
+        responses: existUser.responses,
+        secondResponses: existUser.secondResponses,
+        name: existUser.name,
+      });
+    } else {
+      res
+        .status(200)
+        .send({ responses: existUser.responses, name: existUser.name });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/", async (req, res) => {
+  const { authorization } = req.headers;
+  console.log(authorization);
+  const [authType, authToken] = (authorization || "").split(" ");
+  console.log(authType);
+  console.log(authToken);
+
+  if (!authToken || authType !== "Bearer") {
+    res.status(401).send({ errorMessage: "로그인 후 이용 가능한 기능입니다." });
+    return;
+  }
+  try {
+    const { id } = jwt.verify(authToken, SECRET_KEY);
+    console.log(id);
+    const existUser = await User.findOne({ email: id });
+    res
+      .status(200)
+      .send({ phoneNumber: existUser.phoneNumber, name: existUser.name });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 //? =====================  액세스토큰 발급  =====================
 function createAccessToken(id) {
-  const accessToken = jwt.sign({ id: id }, SECRET_KEY, { expiresIn: "20s" });
+  const accessToken = jwt.sign({ id: id }, SECRET_KEY, { expiresIn: "1d" });
   return accessToken;
 }
 //? =====================  리프레쉬토큰 발급  =====================
 function createRefreshToken() {
-  const refreshToken = jwt.sign({}, SECRET_KEY, { expiresIn: "1m" });
+  const refreshToken = jwt.sign({}, SECRET_KEY, { expiresIn: "1d" });
   return refreshToken;
 }
 //? =====================  액세스토큰 검증  =====================
@@ -84,7 +154,5 @@ function getAccessTokenPayload(accessToken) {
     return null;
   }
 }
-
-module.exports = router;
 
 module.exports = router;
