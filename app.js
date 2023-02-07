@@ -19,9 +19,13 @@ app.use(express.json());
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 // 이거 localhost가 아닌 127.0.0.1로 해야 연결되네 ㅅㅂ;
-mongoose.connect("mongodb://127.0.0.1:27017/prac").then(() => {
-  console.log("몽고 연결 완료");
-});
+mongoose
+  .connect(
+    "mongodb+srv://test:sparta@cluster0.qwdzo5h.mongodb.net/?retryWrites=true&w=majority"
+  )
+  .then(() => {
+    console.log("몽고 연결 완료");
+  });
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
