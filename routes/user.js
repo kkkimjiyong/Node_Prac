@@ -51,6 +51,8 @@ router.post("/survey", async (req, res) => {
   const { authorization } = req.headers;
   const [authType, authToken] = (authorization || "").split(" ");
   const { id } = jwt.verify(authToken, SECRET_KEY);
+  //일단 회원정보를 가져오고
+  const existUser = await User.findOne({ email: id });
   const { responses } = req.body;
   let secondResponses = [];
   if (req.body.secondResponses) {
@@ -68,8 +70,7 @@ router.post("/survey", async (req, res) => {
     }
   }
   console.log(responses);
-  //일단 회원정보를 가져오고
-  const existUser = await User.findOne({ email: id });
+
   //회원이 응답 내역이 있으면,
   try {
     if (existUser.responses.length > 1) {
