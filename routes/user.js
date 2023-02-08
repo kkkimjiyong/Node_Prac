@@ -57,7 +57,7 @@ router.post("/survey", async (req, res) => {
   let secondResponses = [];
   if (req.body.secondResponses) {
     secondResponses = req.body.secondResponses;
-    if (existUser.responses.length > 1) {
+    if (existUser.secondResponses) {
       await User.updateOne(
         { email: id },
         { $set: { secondResponses: secondResponses } }
@@ -73,7 +73,7 @@ router.post("/survey", async (req, res) => {
 
   //회원이 응답 내역이 있으면,
   try {
-    if (existUser.responses.length > 1) {
+    if (existUser.responses) {
       await User.updateOne({ email: id }, { $set: { responses: responses } });
     } else {
       await User.updateOne({ email: id }, { $push: { responses: responses } });
@@ -95,7 +95,7 @@ router.get("/survey/result", async (req, res) => {
   try {
     if (existUser.secondResponses) {
       res.status(200).send({
-        responses: existUser.responses,
+        responses: existUser.responses[p],
         secondResponses: existUser.secondResponses,
         name: existUser.name,
       });
