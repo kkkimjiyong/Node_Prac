@@ -74,8 +74,11 @@ router.post("/survey", async (req, res) => {
   //회원이 응답 내역이 있으면,
   try {
     if (existUser.responses) {
+      console.log(1);
       await User.updateOne({ email: id }, { $set: { responses: responses } });
     } else {
+      console.log(2);
+
       await User.updateOne({ email: id }, { $push: { responses: responses } });
     }
 
