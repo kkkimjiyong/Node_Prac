@@ -54,21 +54,6 @@ router.post("/survey", async (req, res) => {
   //일단 회원정보를 가져오고
   const existUser = await User.findOne({ email: id });
   const { responses } = req.body;
-  let secondResponses = [];
-  if (req.body.secondResponses) {
-    secondResponses = req.body.secondResponses;
-    if (existUser.secondResponses) {
-      await User.updateOne(
-        { email: id },
-        { $set: { secondResponses: secondResponses } }
-      );
-    } else {
-      await User.updateOne(
-        { email: id },
-        { $push: { secondResponses: secondResponses } }
-      );
-    }
-  }
   console.log(responses);
 
   //회원이 응답 내역이 있으면,
@@ -80,6 +65,33 @@ router.post("/survey", async (req, res) => {
       console.log(2);
 
       await User.updateOne({ email: id }, { $push: { responses: responses } });
+    }
+
+    res.status(200).send("성공");
+  } catch (error) {
+    console.log(error);
+  }
+});
+router.post("/survey/second", async (req, res) => {
+  const { authorization } = req.headers;
+  const [authType, authToken] = (authorization || "").split(" ");
+  const { id } = jwt.verify(authToken, SECRET_KEY);
+  //일단 회원정보를 가져오고
+  const existUser = await User.findOne({ email: id });
+  const { secondResponses } = req.body;
+
+  //회원이 응답 내역이 있으면,
+  try {
+    if (existUser.secondResponses) {
+      await User.updateOne(
+        { email: id },
+        { $set: { secondResponses: secondResponses } }
+      );
+    } else {
+      await User.updateOne(
+        { email: id },
+        { $push: { secondResponses: secondResponses } }
+      );
     }
 
     res.status(200).send("성공");
