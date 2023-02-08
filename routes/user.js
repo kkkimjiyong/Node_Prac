@@ -56,9 +56,8 @@ router.post("/survey", async (req, res) => {
   //일단 회원정보를 가져오고
   const existUser = await User.findOne({ email: id });
   //회원이 응답 내역이 있으면,
-
   try {
-    if (existUser.responses) {
+    if (existUser.responses.length) {
       await User.updateOne({ email: id }, { $set: { responses: responses } });
     } else {
       await User.updateOne({ email: id }, { $push: { responses: responses } });
