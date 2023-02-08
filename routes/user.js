@@ -52,6 +52,21 @@ router.post("/survey", async (req, res) => {
   const [authType, authToken] = (authorization || "").split(" ");
   const { id } = jwt.verify(authToken, SECRET_KEY);
   const { responses } = req.body;
+  let secondResponses = [];
+  if (req.body.secondResponses) {
+    secondResponses = req.body.secondResponses;
+    if (existUser.responses.length > 1) {
+      await User.updateOne(
+        { email: id },
+        { $set: { secondResponses: secondResponses } }
+      );
+    } else {
+      await User.updateOne(
+        { email: id },
+        { $push: { secondResponses: secondResponses } }
+      );
+    }
+  }
   console.log(responses);
   //일단 회원정보를 가져오고
   const existUser = await User.findOne({ email: id });
