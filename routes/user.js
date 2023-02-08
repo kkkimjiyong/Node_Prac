@@ -182,6 +182,33 @@ router.get("/", async (req, res) => {
   }
 });
 
+//  ---------------------   카카오 인가코드 받아오기   ----------------------
+const passport = require("passport");
+const KakaoStrategy = require("passport-kakao").Strategy;
+
+router.post("/kakao", async (req, res) => {
+  const { code } = req.body;
+  console.log(code);
+
+  const baseUrl = "https://kauth.kakao.com/oauth/token";
+  const config = {
+    client_id: "6ad4090f0f6da30b4f468e9d81481e0e",
+    grant_type: "authorization_code",
+    redirect_uri: "http://localhost:3000/kakao/auth",
+    code: code,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  const kakaoTokenRequest = await fetch(finalUrl, {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json", // 이 부분을 명시하지않으면 text로 응답을 받게됨
+    },
+  });
+  const json = await kakaoTokenRequest.json();
+  console.log(json);
+});
+
 //? =====================  액세스토큰 발급  =====================
 function createAccessToken(id) {
   const accessToken = jwt.sign({ id: id }, SECRET_KEY, { expiresIn: "1d" });
