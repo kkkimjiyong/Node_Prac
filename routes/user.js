@@ -95,7 +95,7 @@ router.get("/survey/result", async (req, res) => {
   try {
     if (existUser.secondResponses) {
       res.status(200).send({
-        responses: existUser.responses[p],
+        responses: existUser.responses,
         secondResponses: existUser.secondResponses,
         name: existUser.name,
       });
