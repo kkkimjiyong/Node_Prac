@@ -6,6 +6,8 @@ const SECRET_KEY = `hi`;
 
 let tokenObject = {}; // Refresh Token을 저장할 Object
 
+//----------------------------   회원가입   -------------------------------
+
 router.post("/signup", async (req, res) => {
   console.log(req.body);
   const { userInfo } = req.body;
@@ -14,10 +16,11 @@ router.post("/signup", async (req, res) => {
   const existUser = await User.findOne({
     $or: [{ phoneNumber: userInfo.phoneNumber }, { name: userInfo.name }],
   });
-  if (existUser)
+  if (existUser) {
     return res
       .status(400)
       .send({ errorMessage: "이메일 또는 닉네임이 이미 사용중입니다." });
+  }
   const user = new User({
     name: userInfo.name,
     email: userInfo.email,
@@ -26,7 +29,14 @@ router.post("/signup", async (req, res) => {
   });
   await user.save();
 
-  res.status(200).send("성공");
+  const accessToken = createAccessToken(userInfo.email);
+  const refreshToken = createRefreshToken();
+
+  tokenObject[refreshToken] = userInfo.email;
+
+  res
+    .status(200)
+    .send({ accessToken, refreshToken, message: "회원가입 성공!" });
 });
 
 router.post("/login", async (req, res) => {
@@ -100,6 +110,7 @@ router.post("/survey/second", async (req, res) => {
   }
 });
 
+// ---------------------------   회원 설문지 결과 get요청   ---------------------------
 router.get("/survey/result", async (req, res) => {
   const { authorization } = req.headers;
   const [authType, authToken] = (authorization || "").split(" ");
@@ -124,6 +135,30 @@ router.get("/survey/result", async (req, res) => {
   }
 });
 
+//  --------------------- 설문지 시작 전 유저가 설문지 했는 지, 안했는 지 확인요청   ----------------------
+router.get("/survey/start", async (req, res) => {
+  const { authorization } = req.headers;
+  const [authType, authToken] = (authorization || "").split(" ");
+  if (!authToken || authType !== "Bearer") {
+    res.status(401).send({ errorMessage: "로그인 후 이용 가능한 기능입니다." });
+    return;
+  }
+  try {
+    const { id } = jwt.verify(authToken, SECRET_KEY);
+    console.log(id);
+    const existUser = await User.findOne({ email: id });
+    console.log(existUser);
+    if (existUser.responses.length > 1) {
+      res.status(200).send({ message: "already" });
+    } else {
+      res.status(200).send({ message: "none" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//  ---------------------   토큰을 통해, 유저정보 get요청   ----------------------
 router.get("/", async (req, res) => {
   const { authorization } = req.headers;
   console.log(authorization);
