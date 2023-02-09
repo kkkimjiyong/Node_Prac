@@ -5,8 +5,6 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const SECRET_KEY = `hi`;
 
-import fetch from "node-fetch";
-
 let tokenObject = {}; // Refresh Token을 저장할 Object
 
 //----------------------------   회원가입   -------------------------------
@@ -217,25 +215,23 @@ router.post("/kakao", async (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  const kakaoTokenRequest = await fetch(finalUrl, {
+  const kakaoTokenRequest = await axios(finalUrl, {
     method: "POST",
     headers: {
       "Content-type": "application/json", // 이 부분을 명시하지않으면 text로 응답을 받게됨
     },
   });
-  const json = await kakaoTokenRequest.json();
-  console.log("카카오로부터 받은 토큰", json);
-  if ("access_token" in json) {
+  console.log(kakaoTokenRequest);
+  console.log("카카오로부터 받은 토큰", kakaoTokenRequest);
+  if ("access_token" in kakaoTokenRequest) {
     // 엑세스 토큰이 있는 경우 API에 접근
-    const { access_token } = json;
-    const userRequest = await (
-      await fetch("https://kapi.kakao.com/v2/user/me", {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-          "Content-type": "application/json",
-        },
-      })
-    ).json();
+    const { access_token } = kakaoTokenRequest;
+    const userRequest = await await axios("https://kapi.kakao.com/v2/user/me", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        "Content-type": "application/json",
+      },
+    });
     console.log("유저정보", userRequest);
     const { kakao_account } = userRequest;
     //카카오로 로그인하면 카카오고유이메일를 이용해서 토큰을 만들고,
