@@ -208,12 +208,10 @@ router.post("/kakao", async (req, res) => {
 
   const baseUrl = "https://kauth.kakao.com/oauth/token";
 
-   const client_id= "6ad4090f0f6da30b4f468e9d81481e0e",
-    // grant_type= "authorization_code",
-   const  redirect_uri= "https://tax-back-transfer.vercel.app/kakao/auth",
-    // redirect_uri: "http://localhost:3000/kakao/auth",
-
-
+  const client_id = "6ad4090f0f6da30b4f468e9d81481e0e";
+  // grant_type= "authorization_code",
+  const redirect_uri = "https://tax-back-transfer.vercel.app/kakao/auth";
+  // redirect_uri: "http://localhost:3000/kakao/auth",
 
   const finalUrl = `${baseUrl}?client_id=${client_id}&redirect_uri=${redirect_uri}&code=${code}`;
   console.log(finalUrl);
