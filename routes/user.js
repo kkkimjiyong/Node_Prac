@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../schemas/user");
 const jwt = require("jsonwebtoken");
+const fetch = require("node-fetch");
 const SECRET_KEY = `hi`;
 
 let tokenObject = {}; // Refresh Token을 저장할 Object
