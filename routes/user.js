@@ -213,8 +213,7 @@ router.post("/kakao", async (req, res) => {
     // redirect_uri: "http://localhost:3000/kakao/auth",
     code: code,
   };
-  const params = new URLSearchParams(config).toString();
-  const finalUrl = `${baseUrl}?${params}`;
+  const finalUrl = `${baseUrl}?client_id=${client_id}&grant_type=authorization_code&redirect_uri=${redirect_uri}%code=${code}`;
   console.log(finalUrl);
   const kakaoTokenRequest = await axios(finalUrl, {
     method: "POST",
