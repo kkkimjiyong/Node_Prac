@@ -28,5 +28,6 @@
   "bugs": {
     "url": "https://github.com/kkkimjiyong/Node_Prac/issues"
   },
-  "homepage": "https://github.com/kkkimjiyong/Node_Prac#readme"
+  "homepage": "https://github.com/kkkimjiyong/Node_Prac#readme",
+  "type": "module"
 }
