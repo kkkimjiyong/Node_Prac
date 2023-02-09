@@ -214,7 +214,7 @@ router.post("/kakao", async (req, res) => {
     code: code,
   };
 
-  const finalUrl = `${baseUrl}?${qs.stringify}`;
+  const finalUrl = `${baseUrl}?${qs.stringify(config)}`;
   console.log(finalUrl);
   const kakaoTokenRequest = await axios.post(finalUrl).then((res) => {
     console.log("카카오", res);
