@@ -161,10 +161,7 @@ router.get("/survey/start", async (req, res) => {
 //  ---------------------   토큰을 통해, 유저정보 get요청   ----------------------
 router.get("/", async (req, res) => {
   const { authorization } = req.headers;
-  console.log(authorization);
   const [authType, authToken] = (authorization || "").split(" ");
-  console.log(authType);
-  console.log(authToken);
 
   if (!authToken || authType !== "Bearer") {
     res.status(401).send({ errorMessage: "로그인 후 이용 가능한 기능입니다." });
@@ -174,9 +171,12 @@ router.get("/", async (req, res) => {
     const { id } = jwt.verify(authToken, SECRET_KEY);
     console.log(id);
     const existUser = await User.findOne({ email: id });
-    res
-      .status(200)
-      .send({ phoneNumber: existUser.phoneNumber, name: existUser.name });
+    console.log(existUser, "get요청");
+    res.status(200).send({
+      phoneNumber: existUser.phoneNumber,
+      name: existUser.name,
+      email: existUser.email,
+    });
   } catch (error) {
     console.log(error);
   }
@@ -185,6 +185,21 @@ router.get("/", async (req, res) => {
 //  ---------------------   카카오 인가코드 받아오기   ----------------------
 const passport = require("passport");
 const KakaoStrategy = require("passport-kakao").Strategy;
+passport.use(
+  "kakao",
+  new KakaoStrategy(
+    {
+      clientID: "6ad4090f0f6da30b4f468e9d81481e0e",
+      callbackURL: "http://localhost:3000/kakao/auth",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      //console.log(profile);
+      console.log(accessToken);
+      console.log(refreshToken);
+    }
+  )
+);
+router.get("/kakao", passport.authenticate("kakao"));
 
 router.post("/kakao", async (req, res) => {
   const { code } = req.body;
@@ -194,7 +209,7 @@ router.post("/kakao", async (req, res) => {
   const config = {
     client_id: "6ad4090f0f6da30b4f468e9d81481e0e",
     grant_type: "authorization_code",
-    redirect_uri: "http://localhost:3000/kakao/auth",
+    redirect_uri: "https://https://tax-back-transfer.vercel.app/kakao/auth",
     code: code,
   };
   const params = new URLSearchParams(config).toString();
@@ -206,7 +221,69 @@ router.post("/kakao", async (req, res) => {
     },
   });
   const json = await kakaoTokenRequest.json();
-  console.log(json);
+  console.log("카카오로부터 받은 토큰", json);
+  if ("access_token" in json) {
+    // 엑세스 토큰이 있는 경우 API에 접근
+    const { access_token } = json;
+    const userRequest = await (
+      await fetch("https://kapi.kakao.com/v2/user/me", {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+          "Content-type": "application/json",
+        },
+      })
+    ).json();
+    console.log("유저정보", userRequest);
+    const { kakao_account } = userRequest;
+    //카카오로 로그인하면 카카오고유이메일를 이용해서 토큰을 만들고,
+    const accessToken = createAccessToken(kakao_account.email);
+    //카카오고유아이디를 통해서, 디비에서 유저를 찾아보고,
+    const existUser = await User.find({ email: kakao_account.email });
+    console.log("카카오 신규유저", kakao_account.email, existUser);
+    console.log(Boolean(existUser.length));
+    if (existUser.length) {
+      //유저가 이미 가입되어있으면, 디비에 값 안넣고 토큰만 보내면 됨.
+      // 그리고 프론트쪽에 신규가입이 아니니까, 메인으로 넘어가도록 메시지보내주자.
+      return res
+        .status(200)
+        .send({ accessToken: accessToken, kakao: "already" });
+    } else {
+      // 신규유저면, 카카오에서 이메일이랑 이름, 고유아이디로 디비에 저장 후, 토큰지급.
+      const user = new User({
+        name: kakao_account.profile.nickname,
+        email: kakao_account.email,
+      });
+      await user.save();
+      return res.status(200).send({
+        accessToken: accessToken,
+        userInfo: {
+          name: kakao_account.profile.nickname,
+          email: kakao_account.email,
+        },
+      });
+    }
+  }
+});
+
+router.put("/kakao/signup", async (req, res) => {
+  const { userInfo } = req.body;
+  const { authorization } = req.headers;
+  console.log(authorization);
+  const [authType, authToken] = (authorization || "").split(" ");
+  console.log("카카오 회원가입", userInfo);
+  const { id } = jwt.verify(authToken, SECRET_KEY);
+  console.log(id);
+  await User.updateOne(
+    { email: id },
+    {
+      $set: {
+        email: userInfo.email,
+        name: userInfo.name,
+        phoneNumber: userInfo.phoneNumber,
+      },
+    }
+  );
+  res.status(200).send("성공");
 });
 
 //? =====================  액세스토큰 발급  =====================
