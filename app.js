@@ -9,7 +9,7 @@ const tokenRouter = require("./routes/token");
 // cors해결해주자.
 app.use(
   cors({
-    origin: "https://tax-back-transfer.vercel.app",
+    origin: "*",
   })
 );
 

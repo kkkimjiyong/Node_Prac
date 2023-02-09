@@ -210,11 +210,12 @@ router.post("/kakao", async (req, res) => {
     client_id: "6ad4090f0f6da30b4f468e9d81481e0e",
     grant_type: "authorization_code",
     redirect_uri: "https://tax-back-transfer.vercel.app/kakao/auth",
+    // redirect_uri: "http://localhost:3000/kakao/auth",
     code: code,
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  const kakaoTokenRequest = await axios(finalUrl, {
+  const kakaoTokenRequest = await fetch(finalUrl, {
     method: "POST",
     headers: {
       "Content-type": "application/json", // 이 부분을 명시하지않으면 text로 응답을 받게됨
@@ -226,7 +227,7 @@ router.post("/kakao", async (req, res) => {
     // 엑세스 토큰이 있는 경우 API에 접근
     const { access_token } = json;
     const userRequest = await (
-      await axios("https://kapi.kakao.com/v2/user/me", {
+      await fetch("https://kapi.kakao.com/v2/user/me", {
         headers: {
           Authorization: `Bearer ${access_token}`,
           "Content-type": "application/json",
