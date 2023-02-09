@@ -215,10 +215,16 @@ router.post("/kakao", async (req, res) => {
 
   const finalUrl = `${baseUrl}?client_id=${client_id}&grant_type=${grant_type}&redirect_uri=${redirect_uri}&code=${code}`;
   console.log(finalUrl);
-  const kakaoTokenRequest = await axios.post(finalUrl).then((res) => {
-    console.log("카카오", res);
-    return res;
-  });
+  const kakaoTokenRequest = await axios
+    .post(finalUrl, {
+      headers: {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    })
+    .then((res) => {
+      console.log("카카오", res);
+      return res;
+    });
   console.log(kakaoTokenRequest);
   console.log("카카오로부터 받은 토큰", kakaoTokenRequest);
   if ("access_token" in kakaoTokenRequest) {
