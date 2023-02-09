@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../schemas/user");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const SECRET_KEY = `hi`;
 
 let tokenObject = {}; // Refresh Token을 저장할 Object
@@ -183,23 +184,22 @@ router.get("/", async (req, res) => {
 });
 
 //  ---------------------   카카오 인가코드 받아오기   ----------------------
-const passport = require("passport");
-const KakaoStrategy = require("passport-kakao").Strategy;
-passport.use(
-  "kakao",
-  new KakaoStrategy(
-    {
-      clientID: "6ad4090f0f6da30b4f468e9d81481e0e",
-      callbackURL: "http://localhost:3000/kakao/auth",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      //console.log(profile);
-      console.log(accessToken);
-      console.log(refreshToken);
-    }
-  )
-);
-router.get("/kakao", passport.authenticate("kakao"));
+// const passport = require("passport");
+// const KakaoStrategy = require("passport-kakao").Strategy;
+// passport.use(
+//   "kakao",
+//   new KakaoStrategy(
+//     {
+//       clientID: "6ad4090f0f6da30b4f468e9d81481e0e",
+//       callbackURL: "http://localhost:3000/kakao/auth",
+//     },
+//     async (accessToken, refreshToken, profile, done) => {
+//       //console.log(profile);
+//       console.log(accessToken);
+//       console.log(refreshToken);
+//     }
+//   )
+// );
 
 router.post("/kakao", async (req, res) => {
   const { code } = req.body;
@@ -214,7 +214,7 @@ router.post("/kakao", async (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  const kakaoTokenRequest = await fetch(finalUrl, {
+  const kakaoTokenRequest = await axios(finalUrl, {
     method: "POST",
     headers: {
       "Content-type": "application/json", // 이 부분을 명시하지않으면 text로 응답을 받게됨
@@ -226,7 +226,7 @@ router.post("/kakao", async (req, res) => {
     // 엑세스 토큰이 있는 경우 API에 접근
     const { access_token } = json;
     const userRequest = await (
-      await fetch("https://kapi.kakao.com/v2/user/me", {
+      await axios("https://kapi.kakao.com/v2/user/me", {
         headers: {
           Authorization: `Bearer ${access_token}`,
           "Content-type": "application/json",
