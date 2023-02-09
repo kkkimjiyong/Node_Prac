@@ -3,8 +3,9 @@ const router = express.Router();
 const User = require("../schemas/user");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
-const fetch = require("node-fetch");
 const SECRET_KEY = `hi`;
+
+import fetch from "node-fetch";
 
 let tokenObject = {}; // Refresh Token을 저장할 Object
 
