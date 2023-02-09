@@ -213,8 +213,10 @@ router.post("/kakao", async (req, res) => {
     redirect_uri: "https://tax-back-transfer.vercel.app/kakao/auth",
     code: code,
   };
+
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
+  console.log(finalUrl);
   const kakaoTokenRequest = await fetch(finalUrl, {
     method: "POST",
     headers: {
