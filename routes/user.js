@@ -215,6 +215,7 @@ router.post("/kakao", async (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
+  console.log(finalUrl);
   const kakaoTokenRequest = await axios(finalUrl, {
     method: "POST",
     headers: {
