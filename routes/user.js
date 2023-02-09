@@ -210,7 +210,7 @@ router.post("/kakao", async (req, res) => {
   const config = {
     client_id: "6ad4090f0f6da30b4f468e9d81481e0e",
     grant_type: "authorization_code",
-    redirect_uri: "https://https://tax-back-transfer.vercel.app/kakao/auth",
+    redirect_uri: "https://tax-back-transfer.vercel.app/kakao/auth",
     code: code,
   };
   const params = new URLSearchParams(config).toString();
