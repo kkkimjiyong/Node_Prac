@@ -206,19 +206,19 @@ router.post("/kakao", async (req, res) => {
   console.log(code);
 
   const baseUrl = "https://kauth.kakao.com/oauth/token";
+  const config = {
+    client_id: "6ad4090f0f6da30b4f468e9d81481e0e",
+    grant_type: "authorization_code",
+    redirect_uri: "https://tax-back-transfer.vercel.app/kakao/auth",
+    // redirect_uri: "http://localhost:3000/kakao/auth",
+    code: code,
+  };
 
-  const client_id = "6ad4090f0f6da30b4f468e9d81481e0e";
-  const grant_type = "authorization_code";
-  const redirect_uri = "https://tax-back-transfer.vercel.app/kakao/auth";
-  // redirect_uri: "http://localhost:3000/kakao/auth",
-
-  const finalUrl = `${baseUrl}?client_id=${client_id}&grant_type=${grant_type}=${redirect_uri}%code=${code}`;
+  const finalUrl = `${baseUrl}?${qs.stringify}`;
   console.log(finalUrl);
-  const kakaoTokenRequest = await axios(finalUrl, {
-    method: "POST",
-    headers: {
-      "Content-type": "application/json", // 이 부분을 명시하지않으면 text로 응답을 받게됨
-    },
+  const kakaoTokenRequest = await axios.post(finalUrl).then((res) => {
+    console.log("카카오", res);
+    return res;
   });
   console.log(kakaoTokenRequest);
   console.log("카카오로부터 받은 토큰", kakaoTokenRequest);
