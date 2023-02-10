@@ -67,21 +67,22 @@ router.post("/survey", async (req, res) => {
   //일단 회원정보를 가져오고
   const existUser = await User.findOne({ phoneNumber: id });
   const { responses } = req.body;
-
+  console.log(responses[0].response[0]);
   //회원이 응답 내역이 있으면,
   try {
     if (existUser.responses) {
       console.log(1);
       await User.updateOne(
         { phoneNumber: id },
-        { $set: { responses: responses } }
+        // 추가적으로 주택, 토지, 상가를 type으로 추가 (보기 편하니까)
+        { $set: { responses: responses, type: responses[0].response[0] } }
       );
     } else {
       console.log(2);
 
       await User.updateOne(
         { phoneNumber: id },
-        { $push: { responses: responses } }
+        { $push: { responses: responses, type: responses[0].response[0] } }
       );
     }
 
@@ -89,6 +90,23 @@ router.post("/survey", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+//! ---------------------   설문지 수정 api   ----------------------------
+router.put("/survey/edit/:process", async (req, res) => {
+  const { authorization } = req.headers;
+  const [authType, authToken] = (authorization || "").split(" ");
+  const { id } = jwt.verify(authToken, SECRET_KEY);
+  const existUser = await User.findOne({ phoneNumber: id });
+  const { editResponse } = req.body;
+  // 질문 index 파라미터로
+  const index = req.params.process;
+  console.log(index);
+  let responses = existUser.responses;
+  responses[index].response = editResponse;
+  console.log(responses);
+  await User.updateOne({ phoneNumber: id }, { $set: { responses: responses } });
+  res.status(200).send("성공");
 });
 // 아이디 및 주민번호를 통해, 중복체크 라우터
 // router.post('/check' , (req,res) => {
@@ -139,9 +157,11 @@ router.get("/survey/result", async (req, res) => {
   const existUser = await User.findOne({ phoneNumber: id });
 
   try {
-    res
-      .status(200)
-      .send({ responses: existUser.responses, name: existUser.name });
+    res.status(200).send({
+      responses: existUser.responses,
+      name: existUser.name,
+      type: existUser.type,
+    });
   } catch (error) {
     console.log(error);
   }
