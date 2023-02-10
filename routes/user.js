@@ -63,20 +63,26 @@ router.post("/survey", async (req, res) => {
   const { authorization } = req.headers;
   const [authType, authToken] = (authorization || "").split(" ");
   const { id } = jwt.verify(authToken, SECRET_KEY);
+  console.log("토큰", id);
   //일단 회원정보를 가져오고
-  const existUser = await User.findOne({ email: id });
+  const existUser = await User.findOne({ phoneNumber: id });
   const { responses } = req.body;
-  console.log(responses);
 
   //회원이 응답 내역이 있으면,
   try {
     if (existUser.responses) {
       console.log(1);
-      await User.updateOne({ email: id }, { $set: { responses: responses } });
+      await User.updateOne(
+        { phoneNumber: id },
+        { $set: { responses: responses } }
+      );
     } else {
       console.log(2);
 
-      await User.updateOne({ email: id }, { $push: { responses: responses } });
+      await User.updateOne(
+        { phoneNumber: id },
+        { $push: { responses: responses } }
+      );
     }
 
     res.status(200).send("성공");
@@ -84,31 +90,43 @@ router.post("/survey", async (req, res) => {
     console.log(error);
   }
 });
-router.post("/survey/second", async (req, res) => {
-  const { authorization } = req.headers;
-  const [authType, authToken] = (authorization || "").split(" ");
-  const { id } = jwt.verify(authToken, SECRET_KEY);
-  //일단 회원정보를 가져오고
-  const existUser = await User.findOne({ email: id });
-  const { secondResponses } = req.body;
+// 아이디 및 주민번호를 통해, 중복체크 라우터
+// router.post('/check' , (req,res) => {
+//   const { corporation, name, phoneNumber, registerNumber } = req.body;
+//   console.log(req.body);
 
-  //회원이 응답 내역이 있으면,
-  try {
-    if (existUser.secondResponses) {
-      await User.updateOne(
-        { email: id },
-        { $set: { secondResponses: secondResponses } }
-      );
-    } else {
-      await User.updateOne(
-        { email: id },
-        { $push: { secondResponses: secondResponses } }
-      );
-    }
+//   const existUser = await User.findOne({
+//     $or: [{ phoneNumber }, { name }, { registerNumber }],
+//   });
+//   if (existUser) {
+//     return res.status(200).send({ already: true });
+//   }
 
-    res.status(200).send("성공");
-  } catch (error) {
-    console.log(error);
+// })
+
+router.post("/verify", async (req, res) => {
+  const { corporation, name, phoneNumber, registerNumber } = req.body;
+  console.log(req.body);
+  const accessToken = createAccessToken(phoneNumber);
+  const refreshToken = createRefreshToken();
+
+  tokenObject[refreshToken] = phoneNumber;
+
+  const existUser = await User.findOne({
+    $or: [{ phoneNumber }, { name }, { registerNumber }],
+  });
+  if (existUser) {
+    return res.status(200).send({ already: true, accessToken });
+  } else {
+    const user = new User({
+      name,
+      registerNumber,
+      phoneNumber,
+      corporation,
+    });
+    await user.save();
+
+    res.status(200).send({ accessToken, message: "성공" });
   }
 });
 
@@ -118,20 +136,12 @@ router.get("/survey/result", async (req, res) => {
   const [authType, authToken] = (authorization || "").split(" ");
   const { id } = jwt.verify(authToken, SECRET_KEY);
   //일단 회원정보를 가져오고
-  const existUser = await User.findOne({ email: id });
+  const existUser = await User.findOne({ phoneNumber: id });
 
   try {
-    if (existUser.secondResponses) {
-      res.status(200).send({
-        responses: existUser.responses,
-        secondResponses: existUser.secondResponses,
-        name: existUser.name,
-      });
-    } else {
-      res
-        .status(200)
-        .send({ responses: existUser.responses, name: existUser.name });
-    }
+    res
+      .status(200)
+      .send({ responses: existUser.responses, name: existUser.name });
   } catch (error) {
     console.log(error);
   }
@@ -172,12 +182,11 @@ router.get("/", async (req, res) => {
   try {
     const { id } = jwt.verify(authToken, SECRET_KEY);
     console.log(id);
-    const existUser = await User.findOne({ email: id });
+    const existUser = await User.findOne({ phoneNumber: id });
     console.log(existUser, "get요청");
     res.status(200).send({
       phoneNumber: existUser.phoneNumber,
       name: existUser.name,
-      email: existUser.email,
     });
   } catch (error) {
     console.log(error);
