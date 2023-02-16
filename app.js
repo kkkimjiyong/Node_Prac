@@ -2,9 +2,12 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const cors = require("cors");
-// const bodyParser = require("body-parser");
+const helmet = require("helmet");
 const userRouter = require("./routes/user");
 const tokenRouter = require("./routes/token");
+
+// 헤더 설정에서 보안이슈 방어
+app.use(helmet());
 
 // cors해결해주자.
 app.use(
