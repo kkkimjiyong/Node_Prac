@@ -6,6 +6,9 @@ const helmet = require("helmet");
 const userRouter = require("./routes/user");
 const tokenRouter = require("./routes/token");
 const taxBackErrorRouter = require("./routes/TaxBackError");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+const form_data = multer();
 
 // 헤더 설정에서 보안이슈 방어
 app.use(helmet());
@@ -17,8 +20,13 @@ app.use(
   })
 );
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(form_data.array());
+
 // json으로 들어오는 데이터를 다시 변환  =>  이거때문에 안되고있엇구만
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
