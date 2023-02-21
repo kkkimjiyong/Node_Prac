@@ -5,6 +5,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const userRouter = require("./routes/user");
 const tokenRouter = require("./routes/token");
+const taxBackErrorRouter = require("./routes/TaxBackError");
 
 // 헤더 설정에서 보안이슈 방어
 app.use(helmet());
@@ -48,6 +49,6 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 // 미들웨어역할 , 앞의 url주소가 앞에 오면 아래 미들웨어를 거쳐간다.
-
+app.use("/error", [taxBackErrorRouter]);
 app.use("/user", [userRouter]);
 app.use("/token", [tokenRouter]);
