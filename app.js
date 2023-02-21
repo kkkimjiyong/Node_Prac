@@ -49,6 +49,6 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 // 미들웨어역할 , 앞의 url주소가 앞에 오면 아래 미들웨어를 거쳐간다.
-app.use("/error", [taxBackErrorRouter]);
+app.use("/taxback", [taxBackErrorRouter]);
 app.use("/user", [userRouter]);
 app.use("/token", [tokenRouter]);
